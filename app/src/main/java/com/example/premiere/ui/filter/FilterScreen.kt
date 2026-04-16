@@ -58,6 +58,11 @@ fun FilterScreen(
                 Text("Genre", style = MaterialTheme.typography.titleSmall)
                 when {
                     state.isLoadingGenres -> CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    state.genres.isEmpty() -> Text(
+                        "Could not load genres",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
                     else -> {
                         Row(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),

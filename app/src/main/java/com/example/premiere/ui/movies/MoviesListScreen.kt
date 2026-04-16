@@ -7,6 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -66,7 +68,9 @@ fun MoviesListScreen(
         ) {
             SortBar(
                 currentSort = state.sortBy,
-                onSortChanged = { viewModel.onEvent(MoviesListEvent.SortChanged(it)) }
+                sortOrder = state.sortOrder,
+                onSortChanged = { viewModel.onEvent(MoviesListEvent.SortChanged(it)) },
+                onToggleSortOrder = { viewModel.onEvent(MoviesListEvent.ToggleSortOrder) }
             )
 
             Text(
@@ -123,7 +127,9 @@ fun MoviesListScreen(
 @Composable
 fun SortBar(
     currentSort: String,
-    onSortChanged: (String) -> Unit
+    sortOrder: String,
+    onSortChanged: (String) -> Unit,
+    onToggleSortOrder: () -> Unit
 ) {
     val sortOptions = listOf(
         "imdb_rating" to "Rating",
@@ -136,13 +142,25 @@ fun SortBar(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         sortOptions.forEach { (value, label) ->
             FilterChip(
                 selected = currentSort == value,
                 onClick = { onSortChanged(value) },
                 label = { Text(label) }
+            )
+        }
+
+        // Asc/Desc toggle dugme
+        FilledTonalIconButton(onClick = onToggleSortOrder) {
+            Icon(
+                imageVector = if (sortOrder == "desc")
+                    Icons.Default.KeyboardArrowDown
+                else
+                    Icons.Default.KeyboardArrowUp,
+                contentDescription = if (sortOrder == "desc") "Descending" else "Ascending"
             )
         }
     }

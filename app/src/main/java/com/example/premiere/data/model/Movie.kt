@@ -16,7 +16,7 @@ data class Movie(
     val overview: String? = null,
     val budget: Long? = null,
     val revenue: Long? = null,
-    @SerialName("language") val language: String? = null,
+    @SerialName("languageCode") val language: String? = null,
     val popularity: Double? = null,
     val tmdbRating: Double? = null,
     val genres: List<Genre> = emptyList()

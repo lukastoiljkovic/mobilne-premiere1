@@ -4,5 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CastResponse(
-    val cast: List<CastMember> = emptyList()
+    val page: Int = 1,
+    val items: List<CastMember> = emptyList()
 )

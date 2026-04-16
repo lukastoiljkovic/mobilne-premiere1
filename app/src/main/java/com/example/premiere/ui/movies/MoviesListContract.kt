@@ -17,7 +17,7 @@ sealed class MoviesListEvent {
     data class MovieClicked(val movieId: String) : MoviesListEvent()
     object FilterClicked : MoviesListEvent()
     data class SortChanged(val sortBy: String) : MoviesListEvent()
-
+    object ToggleSortOrder : MoviesListEvent()
 }
 
 sealed class MoviesListEffect {

@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PremiereTheme {
+            PremiereTheme(darkTheme = true) {  // DODAJ darkTheme = true
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     NavGraph(navController = navController)

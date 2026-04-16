@@ -48,16 +48,19 @@ class MovieDetailsViewModel(
             val castResult = castDeferred.await()
             val imagesResult = imagesDeferred.await()
             val videosResult = videosDeferred.await()
+            val videos = videosResult.getOrNull() ?: emptyList()
 
-            val trailer = videosResult.getOrNull()?.videos
-                ?.firstOrNull { it.site == "YouTube" && it.type == "Trailer" }
-                ?.key
+            val trailer = (
+                    videos.firstOrNull { it.site?.lowercase() == "youtube" && it.type?.lowercase() == "trailer" }
+                        ?: videos.firstOrNull { it.site?.lowercase() == "youtube" && it.type?.lowercase() == "featurette" }
+                        ?: videos.firstOrNull { it.site?.lowercase() == "youtube" }
+                    )?.key
 
             _state.update {
                 it.copy(
                     movie = movieResult.getOrNull(),
-                    cast = castResult.getOrNull()?.cast ?: emptyList(),
-                    backdropImages = imagesResult.getOrNull()?.images ?: emptyList(),
+                    cast = castResult.getOrNull()?.items ?: emptyList(),
+                    backdropImages = imagesResult.getOrNull()?.backdrops ?: emptyList(),
                     trailerKey = trailer,
                     isLoading = false,
                     error = null

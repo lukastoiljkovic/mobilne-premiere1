@@ -37,7 +37,6 @@ fun NavGraph(navController: NavHostController) {
             FilterScreen(
                 viewModel = filterViewModel,
                 onApplyFilters = {
-                    // Pass filters back to movies list
                     moviesViewModel.applyFilters(filterViewModel.pendingFilters)
                     navController.popBackStack()
                 },

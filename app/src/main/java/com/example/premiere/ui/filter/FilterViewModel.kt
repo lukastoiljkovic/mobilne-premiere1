@@ -35,14 +35,11 @@ class FilterViewModel(
             is FilterEvent.MinYearChanged -> _state.update { it.copy(minYear = event.year) }
             is FilterEvent.MaxYearChanged -> _state.update { it.copy(maxYear = event.year) }
             is FilterEvent.MinRatingChanged -> _state.update { it.copy(minRating = event.rating) }
-            is FilterEvent.ClearAll -> _state.update {
-                it.copy(
-                    query = "",
-                    selectedGenreId = null,
-                    minYear = "",
-                    maxYear = "",
-                    minRating = 0f
-                )
+            is FilterEvent.ClearAll -> {
+                _state.update {
+                    it.copy(query = "", selectedGenreId = null, minYear = "", maxYear = "", minRating = 0f)
+                }
+                pendingFilters = FilterParams() // DODATI OVO
             }
             is FilterEvent.ApplyFilters -> buildFilters()
         }
@@ -62,11 +59,16 @@ class FilterViewModel(
     private fun loadGenres() {
         viewModelScope.launch {
             _state.update { it.copy(isLoadingGenres = true) }
-            repository.getGenres().onSuccess { response ->
-                _state.update { it.copy(genres = response.genres, isLoadingGenres = false) }
-            }.onFailure {
-                _state.update { it.copy(isLoadingGenres = false) }
-            }
+            repository.getGenres()
+                .onSuccess { genres ->
+                    _state.update {
+                        it.copy(genres = genres, isLoadingGenres = false)
+                    }
+                }
+                .onFailure { error ->
+                    android.util.Log.e("FilterVM", "Genre load failed: ${error.message}")
+                    _state.update { it.copy(isLoadingGenres = false) }
+                }
         }
     }
 }

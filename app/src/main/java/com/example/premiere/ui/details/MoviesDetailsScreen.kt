@@ -278,7 +278,7 @@ fun InfoBadges(movie: Movie) {
     val items = buildList {
         movie.budget?.takeIf { it > 0 }?.let { add("Budget" to formatMoney(it)) }
         movie.revenue?.takeIf { it > 0 }?.let { add("Revenue" to formatMoney(it)) }
-        movie.language?.let { add("Language" to it.uppercase()) }
+        movie.language?.takeIf { it.isNotBlank() }?.let { add("Language" to it.uppercase()) }
         movie.popularity?.let { add("Popularity" to "%.1f".format(it)) }
     }
     if (items.isEmpty()) return

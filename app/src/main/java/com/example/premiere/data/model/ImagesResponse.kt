@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ImagesResponse(
-    val images: List<MovieImage> = emptyList()
+    val backdrops: List<MovieImage> = emptyList()
 )

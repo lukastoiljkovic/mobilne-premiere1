@@ -54,24 +54,26 @@ class MovieApi(private val client: HttpClient) {
     }
 
     suspend fun getCast(id: String): CastResponse {
-        return client.get("$BASE_URL/movies/$id/cast") {
+        val response = client.get("$BASE_URL/movies/$id/cast") {
             parameter("page_size", 10)
-        }.body()
+        }
+        val raw = response.bodyAsText()
+        return response.body()
     }
 
     suspend fun getImages(id: String): ImagesResponse {
-        return client.get("$BASE_URL/movies/$id/images") {
+        val response = client.get("$BASE_URL/movies/$id/images") {
             parameter("type", "backdrop")
-        }.body()
+        }
+        val raw = response.bodyAsText()
+        return response.body()
     }
 
-    suspend fun getVideos(id: String): VideosResponse {
-        return client.get("$BASE_URL/movies/$id/videos") {
-            parameter("type", "Trailer")
-        }.body()
+    suspend fun getVideos(id: String): List<MovieVideo> {
+        return client.get("$BASE_URL/movies/$id/videos").body()
     }
 
-    suspend fun getGenres(): GenresResponse {
+    suspend fun getGenres(): List<Genre> {
         return client.get("$BASE_URL/genres").body()
     }
 

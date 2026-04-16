@@ -46,6 +46,11 @@ class MoviesListViewModel(
                 _state.update { it.copy(sortBy = event.sortBy) }
                 loadMovies()
             }
+            is MoviesListEvent.ToggleSortOrder -> {
+                val newOrder = if (_state.value.sortOrder == "desc") "asc" else "desc"
+                _state.update { it.copy(sortOrder = newOrder) }
+                loadMovies()
+            }
         }
     }
 
@@ -74,7 +79,7 @@ class MoviesListViewModel(
                     _state.update {
                         it.copy(
                             movies = response.items,
-                            totalMovies = response.totalItems,
+                            totalMovies = response.items.size,
                             isLoading = false,
                             error = null
                         )

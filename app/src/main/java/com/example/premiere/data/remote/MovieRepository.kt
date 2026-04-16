@@ -29,11 +29,11 @@ class MovieRepository(private val api: MovieApi) {
         api.getImages(id)
     }
 
-    suspend fun getVideos(id: String): Result<VideosResponse> = runCatching {
+    suspend fun getVideos(id: String): Result<List<MovieVideo>> = runCatching {
         api.getVideos(id)
     }
 
-    suspend fun getGenres(): Result<GenresResponse> = runCatching {
+    suspend fun getGenres(): Result<List<Genre>> = runCatching {
         api.getGenres()
     }
 

@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CastMember(
-    val id: Int,
+    @SerialName("imdbId") val id: String,
     val name: String,
-    @SerialName("profile_path") val profilePath: String? = null,
+    val profilePath: String? = null,
     val character: String? = null
 )
