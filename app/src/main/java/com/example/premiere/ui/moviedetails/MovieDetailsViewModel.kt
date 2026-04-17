@@ -1,13 +1,12 @@
-package com.example.premiere.ui.details
+package com.example.premiere.ui.moviedetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.premiere.data.remote.MovieRepository
+import com.example.premiere.data.api.MovieRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 
 class MovieDetailsViewModel(
@@ -15,22 +14,25 @@ class MovieDetailsViewModel(
     private val repository: MovieRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(MovieDetailsState())
-    val state: StateFlow<MovieDetailsState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(MovieDetailsContract.UiState())
+    val state = _state.asStateFlow()
+    private fun setState(reducer: MovieDetailsContract.UiState.() -> MovieDetailsContract.UiState) {
+        _state.getAndUpdate(reducer)
+    }
 
     init {
         loadDetails()
     }
 
-    fun onEvent(event: MovieDetailsEvent) {
+    fun setEvent(event: MovieDetailsContract.UiEvent) {
         when (event) {
-            is MovieDetailsEvent.Retry -> loadDetails()
+            is MovieDetailsContract.UiEvent.Retry -> loadDetails()
         }
     }
 
     private fun loadDetails() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            setState { copy(isLoading = true, error = null) }
 
             val movieDeferred = async { repository.getMovieDetails(movieId) }
             val castDeferred = async { repository.getCast(movieId) }
@@ -39,8 +41,8 @@ class MovieDetailsViewModel(
 
             val movieResult = movieDeferred.await()
             if (movieResult.isFailure) {
-                _state.update {
-                    it.copy(isLoading = false, error = movieResult.exceptionOrNull()?.message ?: "Error")
+                setState {
+                    copy(isLoading = false, error = movieResult.exceptionOrNull()?.message ?: "Error")
                 }
                 return@launch
             }
@@ -56,8 +58,8 @@ class MovieDetailsViewModel(
                         ?: videos.firstOrNull { it.site?.lowercase() == "youtube" }
                     )?.key
 
-            _state.update {
-                it.copy(
+            setState {
+                copy(
                     movie = movieResult.getOrNull(),
                     cast = castResult.getOrNull()?.items ?: emptyList(),
                     backdropImages = imagesResult.getOrNull()?.backdrops ?: emptyList(),

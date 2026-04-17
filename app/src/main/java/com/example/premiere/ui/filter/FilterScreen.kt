@@ -18,12 +18,25 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterScreen(
-    onApplyFilters: () -> Unit,
+    viewModel: FilterViewModel,
     onBack: () -> Unit,
-    viewModel: FilterViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
+    FilterScreen(
+        state = state,
+        eventPublisher = viewModel::setEvent,
+        onBack = onBack,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterScreen(
+    state: FilterContract.UiState,
+    eventPublisher: (FilterContract.UiEvent) -> Unit,
+    onBack: () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -44,16 +57,14 @@ fun FilterScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Search
             OutlinedTextField(
                 value = state.query,
-                onValueChange = { viewModel.onEvent(FilterEvent.QueryChanged(it)) },
+                onValueChange = { eventPublisher(FilterContract.UiEvent.QueryChanged(it)) },
                 label = { Text("Search by title") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
-            // Genre
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Genre", style = MaterialTheme.typography.titleSmall)
                 when {
@@ -71,7 +82,7 @@ fun FilterScreen(
                             state.genres.forEach { genre ->
                                 FilterChip(
                                     selected = state.selectedGenreId == genre.id,
-                                    onClick = { viewModel.onEvent(FilterEvent.GenreSelected(genre.id)) },
+                                    onClick = { eventPublisher(FilterContract.UiEvent.GenreSelected(genre.id)) },
                                     label = { Text(genre.name) }
                                 )
                             }
@@ -80,7 +91,6 @@ fun FilterScreen(
                 }
             }
 
-            // Year range
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Year range", style = MaterialTheme.typography.titleSmall)
                 Row(
@@ -89,14 +99,14 @@ fun FilterScreen(
                 ) {
                     OutlinedTextField(
                         value = state.minYear,
-                        onValueChange = { viewModel.onEvent(FilterEvent.MinYearChanged(it)) },
+                        onValueChange = { eventPublisher(FilterContract.UiEvent.MinYearChanged(it)) },
                         label = { Text("From") },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
                     OutlinedTextField(
                         value = state.maxYear,
-                        onValueChange = { viewModel.onEvent(FilterEvent.MaxYearChanged(it)) },
+                        onValueChange = { eventPublisher(FilterContract.UiEvent.MaxYearChanged(it)) },
                         label = { Text("To") },
                         modifier = Modifier.weight(1f),
                         singleLine = true
@@ -104,7 +114,6 @@ fun FilterScreen(
                 }
             }
 
-            // Min rating
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -120,7 +129,7 @@ fun FilterScreen(
                 }
                 Slider(
                     value = state.minRating,
-                    onValueChange = { viewModel.onEvent(FilterEvent.MinRatingChanged(it)) },
+                    onValueChange = { eventPublisher(FilterContract.UiEvent.MinRatingChanged(it)) },
                     valueRange = 0f..10f,
                     steps = 19
                 )
@@ -128,25 +137,23 @@ fun FilterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(FilterEvent.ClearAll) },
+                    onClick = { eventPublisher(FilterContract.UiEvent.ClearAll) },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Clear All")
+                    Text("Clear all")
                 }
                 Button(
                     onClick = {
-                        viewModel.onEvent(FilterEvent.ApplyFilters)
-                        onApplyFilters()
+                        eventPublisher(FilterContract.UiEvent.ApplyFilters)
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Apply Filters")
+                    Text("Apply filters")
                 }
             }
         }

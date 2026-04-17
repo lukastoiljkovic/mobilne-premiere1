@@ -1,54 +1,55 @@
-package com.example.premiere.ui.movies
+package com.example.premiere.ui.movielist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.premiere.data.model.FilterParams
-import com.example.premiere.data.remote.MovieRepository
-import kotlinx.coroutines.channels.Channel
+import com.example.premiere.data.api.MovieRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 
 class MoviesListViewModel(
     private val repository: MovieRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(MoviesListState())
-    val state: StateFlow<MoviesListState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(MoviesListContract.UiState())
+    val state = _state.asStateFlow()
+    private fun setState(reducer: MoviesListContract.UiState.() -> MoviesListContract.UiState) {
+        _state.getAndUpdate(reducer)
+    }
 
-    private val _effect = Channel<MoviesListEffect>()
-    val effect = _effect.receiveAsFlow()
+    private val _effects = MutableSharedFlow<MoviesListContract.SideEffect>()
+    val effects = _effects.asSharedFlow()
+    private fun setEffect(effect: MoviesListContract.SideEffect) {
+        viewModelScope.launch { _effects.emit(effect) }
+    }
 
     var currentFilters: FilterParams = FilterParams()
         private set
 
     init {
-        onEvent(MoviesListEvent.LoadMovies)
+        setEvent(MoviesListContract.UiEvent.LoadMovies)
     }
 
-    fun onEvent(event: MoviesListEvent) {
+    fun setEvent(event: MoviesListContract.UiEvent) {
         when (event) {
-            is MoviesListEvent.LoadMovies -> loadMovies()
-            is MoviesListEvent.MovieClicked -> {
-                viewModelScope.launch {
-                    _effect.send(MoviesListEffect.NavigateToDetails(event.movieId))
-                }
+            is MoviesListContract.UiEvent.LoadMovies -> loadMovies()
+            is MoviesListContract.UiEvent.MovieClicked -> {
+                setEffect(MoviesListContract.SideEffect.NavigateToDetails(event.movieId))
             }
-            is MoviesListEvent.FilterClicked -> {
-                viewModelScope.launch {
-                    _effect.send(MoviesListEffect.NavigateToFilter)
-                }
+            is MoviesListContract.UiEvent.FilterClicked -> {
+                setEffect(MoviesListContract.SideEffect.NavigateToFilter)
             }
-            is MoviesListEvent.SortChanged -> {
-                _state.update { it.copy(sortBy = event.sortBy) }
+            is MoviesListContract.UiEvent.SortChanged -> {
+                setState { copy(sortBy = event.sortBy) }
                 loadMovies()
             }
-            is MoviesListEvent.ToggleSortOrder -> {
+            is MoviesListContract.UiEvent.ToggleSortOrder -> {
                 val newOrder = if (_state.value.sortOrder == "desc") "asc" else "desc"
-                _state.update { it.copy(sortOrder = newOrder) }
+                setState { copy(sortOrder = newOrder) }
                 loadMovies()
             }
         }
@@ -56,13 +57,13 @@ class MoviesListViewModel(
 
     fun applyFilters(filters: FilterParams) {
         currentFilters = filters
-        _state.update { it.copy(activeFiltersCount = filters.activeCount()) }
+        setState { copy(activeFiltersCount = filters.activeCount()) }
         loadMovies()
     }
 
     private fun loadMovies() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            setState { copy(isLoading = true, error = null) }
             val filters = currentFilters
             val result = repository.getMovies(
                 pageSize = 30,
@@ -76,8 +77,8 @@ class MoviesListViewModel(
             )
             result.fold(
                 onSuccess = { response ->
-                    _state.update {
-                        it.copy(
+                    setState {
+                        copy(
                             movies = response.items,
                             totalMovies = response.items.size,
                             isLoading = false,
@@ -86,10 +87,10 @@ class MoviesListViewModel(
                     }
                 },
                 onFailure = { error ->
-                    _state.update {
-                        it.copy(
+                    setState {
+                        copy(
                             isLoading = false,
-                            error = error.message ?: "Unknown error"
+                            error = error.message ?: "Error"
                         )
                     }
                 }

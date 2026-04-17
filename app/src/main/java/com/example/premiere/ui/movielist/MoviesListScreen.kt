@@ -1,4 +1,4 @@
-package com.example.premiere.ui.movies
+package com.example.premiere.ui.movielist
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -21,26 +21,37 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.premiere.data.model.Movie
-import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesListScreen(
+    viewModel: MoviesListViewModel,
     onMovieClick: (String) -> Unit,
     onFilterClick: () -> Unit,
-    viewModel: MoviesListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
             when (effect) {
-                is MoviesListEffect.NavigateToDetails -> onMovieClick(effect.movieId)
-                is MoviesListEffect.NavigateToFilter -> onFilterClick()
+                is MoviesListContract.SideEffect.NavigateToDetails -> onMovieClick(effect.movieId)
+                is MoviesListContract.SideEffect.NavigateToFilter -> onFilterClick()
             }
         }
     }
 
+    MoviesListScreen(
+        state = state,
+        eventPublisher = viewModel::setEvent,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MoviesListScreen(
+    state: MoviesListContract.UiState,
+    eventPublisher: (MoviesListContract.UiEvent) -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -53,7 +64,7 @@ fun MoviesListScreen(
                             }
                         }
                     ) {
-                        IconButton(onClick = { viewModel.onEvent(MoviesListEvent.FilterClicked) }) {
+                        IconButton(onClick = { eventPublisher(MoviesListContract.UiEvent.FilterClicked) }) {
                             Icon(Icons.Default.FilterList, contentDescription = "Filter")
                         }
                     }
@@ -69,8 +80,8 @@ fun MoviesListScreen(
             SortBar(
                 currentSort = state.sortBy,
                 sortOrder = state.sortOrder,
-                onSortChanged = { viewModel.onEvent(MoviesListEvent.SortChanged(it)) },
-                onToggleSortOrder = { viewModel.onEvent(MoviesListEvent.ToggleSortOrder) }
+                onSortChanged = { eventPublisher(MoviesListContract.UiEvent.SortChanged(it)) },
+                onToggleSortOrder = { eventPublisher(MoviesListContract.UiEvent.ToggleSortOrder) }
             )
 
             Text(
@@ -88,9 +99,9 @@ fun MoviesListScreen(
                 state.error != null -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = state.error ?: "Error", color = MaterialTheme.colorScheme.error)
+                            Text(text = state.error, color = MaterialTheme.colorScheme.error)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { viewModel.onEvent(MoviesListEvent.LoadMovies) }) {
+                            Button(onClick = { eventPublisher(MoviesListContract.UiEvent.LoadMovies) }) {
                                 Text("Retry")
                             }
                         }
@@ -113,7 +124,7 @@ fun MoviesListScreen(
                         state.movies.forEach { movie ->
                             MovieItem(
                                 movie = movie,
-                                onClick = { viewModel.onEvent(MoviesListEvent.MovieClicked(movie.id)) }
+                                onClick = { eventPublisher(MoviesListContract.UiEvent.MovieClicked(movie.id)) }
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))

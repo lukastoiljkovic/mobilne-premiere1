@@ -1,4 +1,4 @@
-package com.example.premiere.navigation
+package com.example.premiere.ui
 
 sealed class Screen(val route: String) {
     object MoviesList : Screen("movies_list")

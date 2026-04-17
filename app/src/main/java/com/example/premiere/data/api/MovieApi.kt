@@ -1,4 +1,4 @@
-package com.example.premiere.data.remote
+package com.example.premiere.data.api
 
 import com.example.premiere.data.model.*
 import io.ktor.client.*

@@ -1,7 +1,7 @@
 package com.example.premiere.di
 
-import com.example.premiere.data.remote.MovieApi
-import com.example.premiere.data.remote.MovieRepository
+import com.example.premiere.data.api.MovieApi
+import com.example.premiere.data.api.MovieRepository
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -9,9 +9,9 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
-import com.example.premiere.ui.movies.MoviesListViewModel
+import com.example.premiere.ui.movielist.MoviesListViewModel
 import com.example.premiere.ui.filter.FilterViewModel
-import com.example.premiere.ui.details.MovieDetailsViewModel
+import com.example.premiere.ui.moviedetails.MovieDetailsViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 
 val appModule = module {

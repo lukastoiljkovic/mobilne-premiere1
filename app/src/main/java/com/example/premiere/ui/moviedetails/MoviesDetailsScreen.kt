@@ -1,4 +1,4 @@
-package com.example.premiere.ui.details
+package com.example.premiere.ui.moviedetails
 
 import android.content.Intent
 import android.net.Uri
@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.premiere.data.model.CastMember
 import com.example.premiere.data.model.Movie
-import com.example.premiere.data.model.MovieImage
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -34,6 +33,21 @@ fun MovieDetailsScreen(
     viewModel: MovieDetailsViewModel = koinViewModel(parameters = { parametersOf(movieId) })
 ) {
     val state by viewModel.state.collectAsState()
+
+    MovieDetailsScreen(
+        state = state,
+        eventPublisher = viewModel::setEvent,
+        onBack = onBack,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MovieDetailsScreen(
+    state: MovieDetailsContract.UiState,
+    eventPublisher: (MovieDetailsContract.UiEvent) -> Unit,
+    onBack: () -> Unit,
+) {
     val context = LocalContext.current
 
     Scaffold(
@@ -61,9 +75,9 @@ fun MovieDetailsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(state.error ?: "Error", color = MaterialTheme.colorScheme.error)
+                        Text(state.error, color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.onEvent(MovieDetailsEvent.Retry) }) {
+                        Button(onClick = { eventPublisher(MovieDetailsContract.UiEvent.Retry) }) {
                             Text("Retry")
                         }
                     }
