@@ -91,7 +91,6 @@ private fun MovieDetailsScreen(
                         .padding(padding)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Backdrop with play button
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -107,7 +106,6 @@ private fun MovieDetailsScreen(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
-                        // Play button overlay
                         if (state.trailerKey != null) {
                             IconButton(
                                 onClick = {
@@ -129,7 +127,6 @@ private fun MovieDetailsScreen(
                         }
                     }
 
-                    // Poster + title row
                     Row(
                         modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -196,7 +193,6 @@ private fun MovieDetailsScreen(
                         }
                     }
 
-                    // Genre chips
                     if (movie.genres.isNotEmpty()) {
                         Row(
                             modifier = Modifier
@@ -211,7 +207,6 @@ private fun MovieDetailsScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    // Overview
                     movie.overview?.let {
                         Text(
                             text = "Overview",
@@ -228,11 +223,9 @@ private fun MovieDetailsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // Info badges
                     InfoBadges(movie = movie)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Images
                     if (state.backdropImages.isNotEmpty()) {
                         Text(
                             text = "Images",
@@ -262,7 +255,6 @@ private fun MovieDetailsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // Cast
                     if (state.cast.isNotEmpty()) {
                         Text(
                             text = "Cast",
